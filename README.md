@@ -2,6 +2,20 @@ A simplistic Labirynth online game.
 
 Built as a learning tool for Zappa and Node.js
 
+Running
+=======
+
+1. Install nvm from https://github.com/creationix/nvm
+2. Install node:
+    nvm install v0.2.5
+    nvm use v0.2.5
+3. Install npm from https://github.com/isaacs/npm
+4. Install necessary packages
+    npm install zappa
+5. Run the application
+    zappa app.coffee
+6. Point your browser to http://localhost:5678/
+
 License
 =======
 
