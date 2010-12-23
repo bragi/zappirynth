@@ -1,12 +1,3 @@
-# Simple labyrinth game implemented as web application running at http://localhost:4567/
-#
-# Starting on a home page it presents user with a short description of his
-# locations and available paths he can take (as links).
-#
-# When gamer gets to last location he is presented with a "YOU'RE WINNER !"
-# congratulations text.
-#
-
 # Model
 
 class Exit
