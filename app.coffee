@@ -1,5 +1,8 @@
 # Model
 
+class State
+  constructor: (@cookies) ->
+
 class Exit
   constructor: (@text, @node) ->
 
@@ -58,8 +61,7 @@ view node: ->
         li -> a href: "/nodes/" + exit.node.id, -> exit.text
 
 get "/", ->
-  @node = start
-  render 'node'
+  redirect "/nodes/#{start.id}"
 
 get "/nodes/:id", ->
   @node = nodes.find(@id)
