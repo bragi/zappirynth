@@ -1,4 +1,4 @@
-A simplistic Labirynth online game.
+A simplistic Labyrinth online game.
 
 Built as a learning tool for Zappa and Node.js
 
@@ -21,6 +21,14 @@ Running
     zappa app.coffee
 
 6. Point your browser to http://localhost:5678/
+
+Testing
+=======
+
+Run tests using:
+
+    coffee test.coffee
+
 
 License
 =======
