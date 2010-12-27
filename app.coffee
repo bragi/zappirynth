@@ -8,6 +8,9 @@ class Game
 
   visited: (node) ->
     @response.cookie('zappirynth_state', node.id, {expires: new Date(Date.now() + 3600*24*1000*360), path: "/"})
+  
+  reset: ->
+    @response.clearCookie('zappirynth_state')
 
 
 class Exit
@@ -58,14 +61,16 @@ layout ->
     head -> title @node.title
   body ->
     div id: "header", ->
-      h2 -> a href: "/", -> "Zappirynth"
+      h2 -> "Zappirynth"
+      p -> 
+        a href: "/restart", -> "Restart"
     div id: "content", -> @content
 
 view node: ->
   h1 @node.title
   if @node.finish()
     p "YOU'RE WINNER !"
-    p -> a href: "/", -> "Start again"
+    p -> a href: "/restart", -> "Start again"
   else
     ul ->
       for exit in @node.exits
@@ -75,6 +80,11 @@ get "/", ->
   game = new Game(cookies, response)
   id = game.node_id()
   redirect "/nodes/#{id}"
+
+get "/restart", ->
+  game = new Game(cookies, response)
+  game.reset()
+  redirect "/"
 
 get "/nodes/:id", ->
   @node = nodes.find(@id)
