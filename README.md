@@ -1,4 +1,4 @@
-A simplistic Labirynth online game.
+A simplistic Labyrinth online game.
 
 Built as a learning tool for Zappa and Node.js
 
