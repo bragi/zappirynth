@@ -1,7 +1,14 @@
 # Model
 
-class State
-  constructor: (@cookies) ->
+class Game
+  constructor: (@cookies, @response) ->
+
+  node_id: ->
+    @cookies.zappirynth_state || start.id
+
+  visited: (node) ->
+    @response.cookie('zappirynth_state', node.id, {expires: new Date(Date.now() + 3600*24*1000*360), path: "/"})
+
 
 class Exit
   constructor: (@text, @node) ->
@@ -43,12 +50,16 @@ right.addExit("Go left", left)
 
 def nodes: nodes
 def start: start
-# View
+def Game: Game
 
+# View
 layout ->
   html ->
     head -> title @node.title
-  body -> @content
+  body ->
+    div id: "header", ->
+      h2 -> a href: "/", -> "Zappirynth"
+    div id: "content", -> @content
 
 view node: ->
   h1 @node.title
@@ -61,8 +72,12 @@ view node: ->
         li -> a href: "/nodes/" + exit.node.id, -> exit.text
 
 get "/", ->
-  redirect "/nodes/#{start.id}"
+  game = new Game(cookies, response)
+  id = game.node_id()
+  redirect "/nodes/#{id}"
 
 get "/nodes/:id", ->
   @node = nodes.find(@id)
+  game = new Game(cookies, response)
+  game.visited(@node)
   render 'node'
