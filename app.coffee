@@ -2,16 +2,42 @@
 
 class Game
   constructor: (@cookies, @response) ->
+    @version = 3
+    @cookieName = "zappirynthstate#{@version}"
+    cookie = @cookies[@cookieName]
+    this.fromString(cookie || '{"inProgress": false, "nodeId": 1}')
 
-  node_id: ->
-    @cookies.zappirynth_state || start.id
+  cookieExpires: ->
+    new Date(Date.now() + 3600*24*1000*360)
 
   visited: (node) ->
-    @response.cookie('zappirynth_state', node.id, {expires: new Date(Date.now() + 3600*24*1000*360), path: "/"})
-  
-  reset: ->
-    @response.clearCookie('zappirynth_state')
+    @nodeId = node.id
+    this.save()
 
+  reset: ->
+    console.log "Resetting game"
+    @response.clearCookie(@cookieName)
+
+  start: (@name) ->
+    console.log "Starting new game"
+    this.inProgress = true
+    this.save()
+
+  save: ->
+    console.log "Saving game state:#{this.toString()}"
+    @response.cookie(@cookieName, this.toString(), {expires: this.cookieExpires(), path: "/"})
+
+  fromString: (text) ->
+    state = JSON.parse(text)
+    @name = state.name
+    @nodeId = state.nodeId || start.id
+    @inProgress = state.inProgress
+
+  toJSON: ->
+    {name: @name, nodeId: @nodeId, inProgress: @inProgress}
+
+  toString: ->
+    JSON.stringify(this)
 
 class Exit
   constructor: (@text, @node) ->
@@ -57,17 +83,23 @@ def Game: Game
 
 # View
 layout ->
+  doctype
   html ->
-    head -> title @node.title
+    head -> title @title
   body ->
     div id: "header", ->
       h2 -> "Zappirynth"
-      p -> 
-        a href: "/restart", -> "Restart"
+      p ->
+
+        form action: "/restart", method: "post", ->
+
+          input type: "submit", value: "Restart"
     div id: "content", -> @content
 
 view node: ->
+  @title = @node.title
   h1 @node.title
+  h2 "Welcome #{@game.name}"
   if @node.finish()
     p "YOU'RE WINNER !"
     p -> a href: "/restart", -> "Start again"
@@ -76,18 +108,52 @@ view node: ->
       for exit in @node.exits
         li -> a href: "/nodes/" + exit.node.id, -> exit.text
 
-get "/", ->
-  game = new Game(cookies, response)
-  id = game.node_id()
-  redirect "/nodes/#{id}"
+view player: ->
+  @title = "Name your player"
+  h1 @title
+  form action: "/player", method: "post", ->
+    label for: "name", -> "Name"
+    input type: "text", name: "name", id: "name"
+    input type: "submit", -> "Start game"
 
-get "/restart", ->
+helper logHeaders: (request) ->
+  console.log "Headers:"
+  for header, value of request.headers
+    console.log "#{header}: #{value}"
+  console.log "Cookies:"
+  for header, value of request.cookies
+    console.log "#{header}: #{value}"
+
+get "/", ->
+  console.log "GET /"
+  game = new Game(cookies, response)
+  if game.inProgress
+    redirect "/nodes/#{game.nodeId}"
+  else
+    redirect "/player"
+
+post "/restart", ->
+  console.log "POST /restart"
   game = new Game(cookies, response)
   game.reset()
   redirect "/"
 
-get "/nodes/:id", ->
-  @node = nodes.find(@id)
+get "/player", ->
+  console.log "GET /player"
+  render 'player'
+
+post "/player", ->
+  console.log "POST /player"
   game = new Game(cookies, response)
-  game.visited(@node)
-  render 'node'
+  game.start(params.name)
+  redirect "/nodes/#{start.id}"
+
+get "/nodes/:id", ->
+  console.log "GET /nodes/#{@id}"
+  @node = nodes.find(@id)
+  @game = new Game(cookies, response)
+  if @game.inProgress
+    @game.visited(@node)
+    render 'node'
+  else
+    redirect "/player"
