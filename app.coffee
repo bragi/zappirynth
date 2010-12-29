@@ -90,9 +90,7 @@ layout ->
     div id: "header", ->
       h2 -> "Zappirynth"
       p ->
-
         form action: "/restart", method: "post", ->
-
           input type: "submit", value: "Restart"
     div id: "content", -> @content
 
@@ -102,7 +100,9 @@ view node: ->
   h2 "Welcome #{@game.name}"
   if @node.finish()
     p "YOU'RE WINNER !"
-    p -> a href: "/restart", -> "Start again"
+    p ->
+      form action: "/restart", method: "post", ->
+        input type: "submit", value: "Restart"
   else
     ul ->
       for exit in @node.exits
