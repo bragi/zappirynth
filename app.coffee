@@ -1,18 +1,17 @@
 # Model
-
 class Game
   constructor: (@cookies, @response) ->
     @version = 3
     @cookieName = "zappirynthstate#{@version}"
     cookie = @cookies[@cookieName]
-    this.fromString(cookie || '{"inProgress": false, "nodeId": 1}')
+    @fromString(cookie || '{"inProgress": false, "nodeId": 1}')
 
   cookieExpires: ->
     new Date(Date.now() + 3600*24*1000*360)
 
   visited: (node) ->
     @nodeId = node.id
-    this.save()
+    @save()
 
   reset: ->
     console.log "Resetting game"
@@ -21,11 +20,11 @@ class Game
   start: (@name) ->
     console.log "Starting new game"
     this.inProgress = true
-    this.save()
+    @save()
 
   save: ->
-    console.log "Saving game state:#{this.toString()}"
-    @response.cookie(@cookieName, this.toString(), {expires: this.cookieExpires(), path: "/"})
+    console.log "Saving game state:#{@toString()}"
+    @response.cookie(@cookieName, @toString(), {expires: @cookieExpires(), path: "/"})
 
   fromString: (text) ->
     state = JSON.parse(text)
@@ -114,7 +113,11 @@ view player: ->
   form action: "/player", method: "post", ->
     label for: "name", -> "Name"
     input type: "text", name: "name", id: "name"
-    input type: "submit", -> "Start game"
+    input type: "submit", value: "Start game"
+
+view blank: ->
+  @title = "Blank"
+  p "Blank"
 
 helper logHeaders: (request) ->
   console.log "Headers:"
@@ -146,10 +149,12 @@ post "/player", ->
   console.log "POST /player"
   game = new Game(cookies, response)
   game.start(params.name)
+  logHeaders response
   redirect "/nodes/#{start.id}"
 
 get "/nodes/:id", ->
   console.log "GET /nodes/#{@id}"
+  logHeaders request
   @node = nodes.find(@id)
   @game = new Game(cookies, response)
   if @game.inProgress
